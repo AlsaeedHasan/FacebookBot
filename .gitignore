@@ -1,0 +1,65 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg
+*.egg-info/
+dist/
+build/
+eggs/
+*.manifest
+*.spec
+
+# Virtual environments
+venv/
+env/
+.venv/
+.env/
+
+# Session files
+*.session
+*.session-journal
+
+# User data - cookies and profiles
+cookies/
+profiles/
+screenshots/
+
+# Generated files
+generated_extensions/
+
+# Database data (keep structure, ignore data)
+database/bot_data.json
+
+# IDE/Editor
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.project
+.pydevproject
+.settings/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Environment variables
+.env
+.env.local
+
+# Other
+*.bak
+*.tmp
+*.old
+*.backup
+*.orig
+*.zip
+check_proxy.py
+debug_manual_login.py

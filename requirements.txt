@@ -1,0 +1,10 @@
+pyrogram
+pyrofork
+pillow
+python-dotenv
+selenium
+# selenium-wire removed - causes reCAPTCHA detection by Facebook
+# Using proxy extension instead for authentication
+webdriver-manager
+undetected-chromedriver
+colorlog
