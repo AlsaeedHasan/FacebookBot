@@ -1,4 +1,4 @@
-# 🤖 Facebook Automation Bot v1.1.1
+# Facebook Automation Bot v1.1.1
 
 <div align="center">
 
@@ -14,7 +14,7 @@
 
 ---
 
-## 📋 Table of Contents
+## Table of Contents
 
 - [Overview](#-overview)
 - [Key Features](#-key-features)
@@ -34,19 +34,19 @@
 
 ---
 
-## 🎯 Overview
+## Overview
 
 This bot provides a seamless interface to automate Facebook operations through Telegram. Built with a focus on **stealth, reliability, and production-readiness**, it employs advanced anti-detection mechanisms to ensure stable, long-term automation without triggering Facebook's security systems.
 
 ### What's New in v1.1.1
 
-- ✅ **Removed Selenium-Wire** - Eliminated MITM proxy that caused reCAPTCHA detection
-- ✅ **Dynamic Chrome Extension Proxy** - MV3-compatible proxy authentication
-- ✅ **Human-Assisted Manual Login** - Visible browser for secure credential entry
-- ✅ **Auto-Save Cookies** - Automatic session persistence after successful operations
-- ✅ **Warm-up Behavior** - Visits Facebook home before actions (human-like pattern)
-- ✅ **Account Relogin Feature** - Fresh profile regeneration with new proxy
-- ✅ **IP Kill Switch** - Automatic abort if proxy leaks real IP
+- **Removed Selenium-Wire** - Eliminated MITM proxy that caused reCAPTCHA detection
+- **Dynamic Chrome Extension Proxy** - MV3-compatible proxy authentication
+- **Human-Assisted Manual Login** - Visible browser for secure credential entry
+- **Auto-Save Cookies** - Automatic session persistence after successful operations
+- **Warm-up Behavior** - Visits Facebook home before actions (human-like pattern)
+- **Account Relogin Feature** - Fresh profile regeneration with new proxy
+- **IP Kill Switch** - Automatic abort if proxy leaks real IP
 
 ### Tech Stack
 
@@ -61,9 +61,9 @@ This bot provides a seamless interface to automate Facebook operations through T
 
 ---
 
-## ✨ Key Features
+## Key Features
 
-### 🛡️ Advanced Anti-Detection System
+### Advanced Anti-Detection System
 
 The bot uses a multi-layered anti-detection architecture:
 
@@ -75,7 +75,7 @@ The bot uses a multi-layered anti-detection architecture:
 | **Sessions** | Profile isolation       | Each account has dedicated browser profile        |
 | **Cookies**  | Auto-save               | Keeps sessions fresh with renewed tokens          |
 
-### 🌐 Smart Proxy Management
+### Smart Proxy Management
 
 **Dynamic Chrome Extension Generation:**
 
@@ -93,12 +93,12 @@ proxy_extension = create_proxy_extension(
 
 **Features:**
 
-- ✅ No MITM proxy (undetectable)
-- ✅ MV3 compatible (Chrome 108+)
-- ✅ Async auth handling
-- ✅ Sticky sessions per account
+- No MITM proxy (undetectable)
+- MV3 compatible (Chrome 108+)
+- Async auth handling
+- Sticky sessions per account
 
-### 📁 Profile Isolation
+### Profile Isolation
 
 Each Facebook account operates in complete isolation:
 
@@ -114,13 +114,13 @@ profiles/
     └── ...
 ```
 
-### 🍪 Automatic Cookie Management
+### Automatic Cookie Management
 
 - **Auto-save after success**: Cookies saved automatically after react/comment/share/follow
 - **Session persistence**: Tokens renewed to prevent expiration
 - **Path tracking**: `cookies/{email}.json` per account
 
-### 🏠 Human-Like Warm-up Behavior
+### Human-Like Warm-up Behavior
 
 Before performing any action, the bot:
 
@@ -133,7 +133,7 @@ This mimics natural user behavior and reduces detection risk.
 
 ---
 
-## 🏗️ Architecture
+## Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -182,7 +182,7 @@ This mimics natural user behavior and reduces detection risk.
 
 ---
 
-## 📂 Project Structure
+## Project Structure
 
 ```
 FacebookBotV1.1.1/
@@ -255,7 +255,7 @@ FacebookBotV1.1.1/
 
 ---
 
-## 🚀 Installation
+## Installation
 
 ### Prerequisites
 
@@ -313,7 +313,7 @@ nano .env
 
 ---
 
-## ⚙️ Configuration
+## Configuration
 
 ### Environment Variables (.env)
 
@@ -387,7 +387,7 @@ SCREENSHOTS_DIR=./screenshots
 
 ---
 
-## 🎮 Usage
+## Usage
 
 ### Starting the Bot
 
@@ -422,10 +422,10 @@ python main.py
 /services
   ↓
 ┌─────────────────────────────────┐
-│  👍 React to Post               │
-│  💬 Comment on Post             │
-│  🔄 Share Post                  │
-│  ➕ Follow Page/Profile         │
+│  React to Post                  │
+│  Comment on Post                │
+│  Share Post                     │
+│  Follow Page/Profile            │
 └─────────────────────────────────┘
   ↓
 Enter post/page URL
@@ -437,7 +437,7 @@ Action executed with warm-up + auto-save
 
 ---
 
-## 📱 Telegram Commands
+## Telegram Commands
 
 | Command     | Description                           |
 | ----------- | ------------------------------------- |
@@ -459,7 +459,7 @@ Action executed with warm-up + auto-save
 
 ---
 
-## 🛡️ Anti-Detection Techniques
+## Anti-Detection Techniques
 
 ### 1. Undetected ChromeDriver
 
@@ -517,7 +517,7 @@ Each account has:
 
 ---
 
-## 🔌 Proxy Extension System
+## Proxy Extension System
 
 ### How It Works
 
@@ -582,7 +582,7 @@ chrome.webRequest.onAuthRequired.addListener(
 
 ---
 
-## 📊 Account Management
+## Account Management
 
 ### Adding an Account
 
@@ -604,7 +604,7 @@ chrome.webRequest.onAuthRequired.addListener(
 When an account needs fresh credentials:
 
 1. Go to `/accounts` → Select account
-2. Click "🔄 Relogin"
+2. Click "Relogin"
 3. Confirm the warning (deletes profile + cookies)
 4. Login fresh with new proxy
 
@@ -628,7 +628,7 @@ This keeps sessions fresh and prevents token expiration.
 
 ---
 
-## 🔧 API Reference
+## API Reference
 
 ### Client Class
 
@@ -705,7 +705,7 @@ proxy_url = pm.get_new_proxy(account_id="user@email.com")
 
 ---
 
-## 🔧 Troubleshooting
+## Troubleshooting
 
 ### Common Issues
 
@@ -757,20 +757,20 @@ python main.py
 
 ---
 
-## 🔒 Security Considerations
+## Security Considerations
 
 ### Credentials Safety
 
-- ⚠️ Never commit `.env` to version control
-- ⚠️ Use strong passwords for bot authentication
-- ⚠️ DataImpulse credentials are embedded in extensions (local only)
+- Never commit `.env` to version control
+- Use strong passwords for bot authentication
+- DataImpulse credentials are embedded in extensions (local only)
 
 ### Facebook Account Safety
 
-- ✅ Use accounts you own or have permission to automate
-- ✅ Use residential proxies (DataImpulse) to avoid detection
-- ✅ Don't run excessive automation (rate limit yourself)
-- ✅ Use the relogin feature if account gets flagged
+- Use accounts you own or have permission to automate
+- Use residential proxies (DataImpulse) to avoid detection
+- Don't run excessive automation (rate limit yourself)
+- Use the relogin feature if account gets flagged
 
 ### IP Protection
 
@@ -782,7 +782,7 @@ The IP Kill Switch prevents operations if:
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 1. Fork the repository
 2. Create a feature branch: `git checkout -b feature/amazing-feature`
@@ -792,7 +792,7 @@ The IP Kill Switch prevents operations if:
 
 ---
 
-## 📄 License
+## License
 
 This project is for educational purposes only. Use responsibly and in accordance with Facebook's Terms of Service.
 
@@ -800,7 +800,7 @@ This project is for educational purposes only. Use responsibly and in accordance
 
 <div align="center">
 
-**Built with ❤️ using Python, Pyrogram, and undetected-chromedriver**
+**Built with Python, Pyrogram, and undetected-chromedriver**
 
 **v1.1.1** | January 2026
 
