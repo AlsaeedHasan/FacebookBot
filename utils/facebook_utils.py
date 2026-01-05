@@ -1,6 +1,7 @@
 import json
 import os
 import pickle
+import random
 import time
 import uuid
 from io import BytesIO
@@ -29,6 +30,7 @@ class FacebookUtils:
         account_id: Optional[str] = None,
         optimize_bandwidth: bool = True,
         load_images: bool = False,
+        auto_save_cookies: bool = True,
     ):
         """Initialize Facebook utilities with Anti-Detect capabilities
 
@@ -38,6 +40,7 @@ class FacebookUtils:
             account_id: Account identifier for profile isolation
             optimize_bandwidth: Block CSS/fonts to save bandwidth (default: True)
             load_images: Allow images to load (default: False for bandwidth saving)
+            auto_save_cookies: Auto-save cookies after successful operations (default: True)
         """
         self.client = None
         self.logger = logger or Logger.get_logger("facebook_utils")
@@ -46,6 +49,8 @@ class FacebookUtils:
         self._account_id = account_id
         self._optimize_bandwidth = optimize_bandwidth
         self._load_images = load_images
+        self._auto_save_cookies = auto_save_cookies
+        self._cookies_file_path = None  # Track the cookies file for auto-save
 
     def _init_client_safe(
         self,
@@ -214,7 +219,7 @@ class FacebookUtils:
                                 "status": "error",
                                 "message": "Invalid cookies file format. Must be .json or .pkl",
                                 "error_type": "file_format",
-                            }, self._take_screenshot()
+                            }, self._take_screenshot(f"saving_cookies_{self._account_id}_error_")
                         if save_cookies:
                             os.makedirs("cookies", exist_ok=True)
                             cookies_file = os.path.join("cookies", email + ".json")
@@ -227,7 +232,7 @@ class FacebookUtils:
                             "status": "error",
                             "message": f"Failed to load cookies: {str(e)}",
                             "error_type": "cookies_error",
-                        }, self._take_screenshot()
+                        }, self._take_screenshot(f"saving_cookies_{self._account_id}_error_")
                 # Login with cookies string
                 elif cookies_str:
                     try:
@@ -244,7 +249,7 @@ class FacebookUtils:
                                 "status": "error",
                                 "message": "Failed to login with cookies string",
                                 "error_type": "cookies_error",
-                            }, self._take_screenshot()
+                            }, self._take_screenshot(f"saving_cookies_{self._account_id}_error_")
 
                         result = {
                             "status": "ok",
@@ -260,13 +265,13 @@ class FacebookUtils:
                             "status": "error",
                             "message": f"Failed to login with cookies string: {str(e)}",
                             "error_type": "cookies_error",
-                        }, self._take_screenshot()
+                        }, self._take_screenshot(f"saving_cookies_{self._account_id}_error_")
                 else:
                     return {
                         "status": "error",
                         "message": "No cookies provided (file or string)",
                         "error_type": "missing_cookies",
-                    }, self._take_screenshot()
+                    }, self._take_screenshot(f"saving_cookies_{self._account_id}_error_")
             # Login with email and password
             else:
                 if not password:
@@ -274,7 +279,7 @@ class FacebookUtils:
                         "status": "error",
                         "message": "Password is required for login with credentials",
                         "error_type": "missing_password",
-                    }, self._take_screenshot()
+                    }, self._take_screenshot(f"saving_cookies_{self._account_id}_error_")
 
                 # Login with email and password
                 # For login with credentials, we don't use mobile emulation
@@ -296,8 +301,11 @@ class FacebookUtils:
 
             self.current_account = email
 
+            # Track cookies file path for auto-save
+            self._cookies_file_path = os.path.join("cookies", f"{email}.json")
+
             # Always take screenshot for verification
-            screenshot = self._take_screenshot()
+            screenshot = self._take_screenshot(f"login_{self._account_id}_")
 
             return result, screenshot
 
@@ -311,7 +319,7 @@ class FacebookUtils:
 
             # Try to take screenshot if possible
             try:
-                screenshot = self._take_screenshot()
+                screenshot = self._take_screenshot(f"login_{self._account_id}_error_")
             except:
                 pass
 
@@ -361,9 +369,80 @@ class FacebookUtils:
                 with open(file_path, "w") as f:
                     json.dump(cookies, f)
 
+            self.logger.info(f"✅ Cookies saved to: {file_path}")
             return True
-        except Exception:
+        except Exception as e:
+            self.logger.warning(f"⚠️ Failed to save cookies: {e}")
             return False
+
+    def _auto_save_cookies_if_enabled(self) -> bool:
+        """Auto-save cookies if enabled and cookies file path is set.
+
+        This should be called after every successful operation to keep
+        cookies fresh and tokens renewed.
+
+        Returns:
+            bool: True if cookies were saved, False otherwise
+        """
+        if not self._auto_save_cookies:
+            return False
+
+        if not self._cookies_file_path:
+            # Try to construct path from current account
+            if self.current_account:
+                self._cookies_file_path = os.path.join(
+                    "cookies", f"{self.current_account}.json"
+                )
+            else:
+                self.logger.debug("No cookies file path set, skipping auto-save")
+                return False
+
+        return self.save_cookies(self._cookies_file_path)
+
+    def _warmup_visit_home(self) -> None:
+        """Open a new tab, visit Facebook home page, and continue using it.
+
+        This simulates human-like browsing behavior before performing actions.
+        Makes the automation less detectable by visiting the feed first.
+        The new tab becomes the active tab for subsequent actions.
+        """
+        if not self.client:
+            return
+
+        try:
+            self.client.switch_to.new_window("tab")
+
+            # Visit Facebook home
+            self.client.get(
+                "https://m.facebook.com/"
+                if self.client.enable_mobile_emulation
+                else "https://www.facebook.com/"
+            )
+
+            # Wait for page load
+            self.client.wait.until(
+                lambda driver: driver.execute_script("return document.readyState")
+                == "complete"
+            )
+
+            # sleep(1 + time.time() % 2)
+            # Brief pause to simulate looking at feed (2-4 seconds)
+            pause_duration = random.uniform(2, 4)
+            sleep(pause_duration)
+
+            # to check warm-up was done successfully
+            self._take_screenshot(f"warmup_{self._account_id}_")
+
+            self.logger.debug("✅ Warm-up visit to Facebook home completed")
+
+        except Exception as e:
+            self.logger.warning(f"⚠️ Warm-up visit failed: {e}")
+            # Try to recover by switching to first available window
+            try:
+                if self.client.window_handles:
+                    self.client.switch_to.window(self.client.window_handles[-1])
+            except:
+                pass
 
     def react_post(
         self,
@@ -389,11 +468,18 @@ class FacebookUtils:
             }, None
 
         try:
+            # Warm-up: Visit Facebook home first (human-like behavior)
+            self._warmup_visit_home()
+
             # React to post
             result = self.client.react(post_url=post_url, react=react_type)
 
+            # Auto-save cookies after successful operation
+            if result.get("status") == "ok":
+                self._auto_save_cookies_if_enabled()
+
             # Take screenshot
-            screenshot = self._take_screenshot()
+            screenshot = self._take_screenshot(f"react_{self._account_id}_")
 
             return result, screenshot
         except Exception as e:
@@ -405,7 +491,7 @@ class FacebookUtils:
 
             # Try to take screenshot if possible
             try:
-                screenshot = self._take_screenshot()
+                screenshot = self._take_screenshot(f"react_{self._account_id}_error_")
             except:
                 screenshot = None
 
@@ -433,11 +519,18 @@ class FacebookUtils:
             }, None
 
         try:
+            # Warm-up: Visit Facebook home first (human-like behavior)
+            self._warmup_visit_home()
+
             # Comment on post
             result = self.client.comment(post_url=post_url, cmnt=comment_text)
 
+            # Auto-save cookies after successful operation
+            if result.get("status") == "ok":
+                self._auto_save_cookies_if_enabled()
+
             # Take screenshot
-            screenshot = self._take_screenshot()
+            screenshot = self._take_screenshot(f"comment_{self._account_id}_")
 
             return result, screenshot
         except Exception as e:
@@ -449,7 +542,7 @@ class FacebookUtils:
 
             # Try to take screenshot if possible
             try:
-                screenshot = self._take_screenshot()
+                screenshot = self._take_screenshot(f"comment_{self._account_id}_error_")
             except:
                 screenshot = None
 
@@ -475,11 +568,18 @@ class FacebookUtils:
             }, None
 
         try:
+            # Warm-up: Visit Facebook home first (human-like behavior)
+            self._warmup_visit_home()
+
             # Follow page
             result = self.client.follow(page_url=page_url)
 
+            # Auto-save cookies after successful operation
+            if result.get("status") == "ok":
+                self._auto_save_cookies_if_enabled()
+
             # Take screenshot
-            screenshot = self._take_screenshot()
+            screenshot = self._take_screenshot(f"follow_{self._account_id}_")
 
             return result, screenshot
         except Exception as e:
@@ -491,7 +591,7 @@ class FacebookUtils:
 
             # Try to take screenshot if possible
             try:
-                screenshot = self._take_screenshot()
+                screenshot = self._take_screenshot(f"follow_{self._account_id}_error_")
             except:
                 screenshot = None
 
@@ -521,13 +621,20 @@ class FacebookUtils:
             }, None
 
         try:
+            # Warm-up: Visit Facebook home first (human-like behavior)
+            self._warmup_visit_home()
+
             # Share post
             result = self.client.share(
                 post_url=post_url,  # share_text=share_text, visibility=visibility
             )
 
+            # Auto-save cookies after successful operation
+            if result.get("status") == "ok":
+                self._auto_save_cookies_if_enabled()
+
             # Take screenshot
-            screenshot = self._take_screenshot()
+            screenshot = self._take_screenshot(f"share_{self._account_id}_")
 
             return result, screenshot
         except Exception as e:
@@ -539,7 +646,7 @@ class FacebookUtils:
 
             # Try to take screenshot if possible
             try:
-                screenshot = self._take_screenshot()
+                screenshot = self._take_screenshot(f"share_{self._account_id}_error_")
             except:
                 screenshot = None
 
@@ -585,7 +692,7 @@ class FacebookUtils:
 
             # Try to take screenshot if possible
             try:
-                screenshot = self._take_screenshot()
+                screenshot = self._take_screenshot(f"check_account_{email}_error_")
             except:
                 screenshot = None
 
@@ -596,7 +703,7 @@ class FacebookUtils:
 
             return error_result, screenshot
 
-    def _take_screenshot(self) -> BytesIO:
+    def _take_screenshot(self, image_starter: str = None) -> BytesIO:
         """Take a screenshot of the current browser window
 
         Returns:
@@ -606,7 +713,9 @@ class FacebookUtils:
             raise ValueError("Client not initialized")
 
         # Take screenshot
-        path = "screenshots/" + uuid.uuid1().hex + ".png"
+        os.makedirs("./screenshots", exist_ok=True)
+        path = f"./screenshots/{image_starter or ''}{uuid.uuid4().hex[:8]}.png"
+        self.logger.debug(f"Taking screenshot: {path}")
         self.client.save_screenshot(path)
 
         return path
