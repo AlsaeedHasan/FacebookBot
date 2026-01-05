@@ -83,13 +83,26 @@ class ArabicText:
     NEXT_PAGE = "الصفحة التالية"
 
     # Account Check
-    CHECK_ACCOUNT = "فحص الحساب 🔍"
+    CHECK_ACCOUNT = "فحص 🔍"
     ACCOUNT_CHECK_SUCCESS = "تم فحص الحساب بنجاح ✅"
     ACCOUNT_CHECK_FAILED = "فشل الفحص ❌"
     ACCOUNT_CHECK_LOADING = "جاري فحص الحساب..."
     ACCOUNT_CHECK_RESULT = "نتيجة فحص الحساب"
     ACCOUNT_CHECK_RELOGIN = "إعادة تسجيل الدخول"
     RELOGIN_METHOD = "اختر طريقة تسجيل الدخول مجدداً:"
+    
+    # Relogin
+    RELOGIN_BUTTON = "إعادة تسجيل"
+    RELOGIN_CONFIRM_TITLE = "⚠️ تأكيد إعادة تسجيل الدخول"
+    RELOGIN_CONFIRM_MESSAGE = (
+        "⚠️ **تحذير هام:**\n\n"
+        "إعادة تسجيل الدخول ستقوم بـ:\n"
+        "• حذف جلسة تسجيل الدخول الحالية\n"
+        "📧 الحساب: `{email}`\n\n"
+        "هل أنت متأكد من المتابعة؟"
+    )
+    RELOGIN_CANCELLED = "تم إلغاء عملية إعادة تسجيل الدخول"
+    RELOGIN_PROFILE_DELETED = "✅ تم حذف البروفايل القديم"
 
 
 def create_keyboard(buttons: List[List[Tuple[str, str]]]) -> InlineKeyboardMarkup:

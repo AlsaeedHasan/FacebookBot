@@ -87,6 +87,63 @@ async def accounts_callback(client: Client, callback_query: CallbackQuery):
 
         await callback_query.answer("تم حذف الحساب بنجاح", show_alert=True)
         await accounts_menu(client, callback_query, is_callback=True)
+    elif action == "relogin_confirm":
+        # Show relogin confirmation
+        if len(data) < 3:
+            await callback_query.answer("حدث خطأ", show_alert=True)
+            return
+
+        email = data[2]
+
+        # Check if user is account owner
+        if not db.is_facebook_account_owner(username, email):
+            await callback_query.answer("أنت لست مالك هذا الحساب", show_alert=True)
+            return
+
+        # Show confirmation message
+        await callback_query.edit_message_text(
+            ArabicText.RELOGIN_CONFIRM_MESSAGE.format(email=email),
+            reply_markup=create_keyboard(
+                [
+                    [
+                        (ArabicText.YES, f"accounts:relogin_execute:{email}"),
+                        (ArabicText.NO, "accounts:list"),
+                    ],
+                    [(ArabicText.BACK, "accounts:list")],
+                ]
+            ),
+        )
+    elif action == "relogin_execute":
+        # Execute relogin - delete profile and cookies, then start fresh login
+        if len(data) < 3:
+            await callback_query.answer("حدث خطأ", show_alert=True)
+            return
+
+        email = data[2]
+
+        # Check if user is account owner
+        if not db.is_facebook_account_owner(username, email):
+            await callback_query.answer("أنت لست مالك هذا الحساب", show_alert=True)
+            return
+
+        # Delete old profile directory
+        profile_dir = f"./profiles/{email.replace('@', '_').replace('.', '_')}"
+        if os.path.exists(profile_dir):
+            shutil.rmtree(profile_dir, ignore_errors=True)
+
+        # Delete old cookies file
+        cookies_file = f"./cookies/{email}.json"
+        if os.path.exists(cookies_file):
+            os.remove(cookies_file)
+
+        # Remove account from database (will be re-added after successful login)
+        db.remove_facebook_account(email)
+
+        await callback_query.answer(ArabicText.RELOGIN_PROFILE_DELETED, show_alert=True)
+
+        # Start fresh login with credentials
+        await login_with_credentials(client, callback_query, username)
+
     elif action == "check":
         # Check if user is authenticated
         if not db.is_authenticated(telegram_id):
@@ -117,7 +174,10 @@ async def accounts_callback(client: Client, callback_query: CallbackQuery):
         await callback_query.edit_message_text(ArabicText.ACCOUNT_CHECK_LOADING)
 
         # Check account
-        facebook = FacebookUtils()
+        facebook = FacebookUtils(
+            proxy=account.get("proxy", None),
+            account_id=email,
+        )
         result, screenshot = facebook.check_account(
             email, cookies_file=account["cookies_path"]
         )
@@ -293,6 +353,7 @@ async def list_accounts(
                 [(email.split("@")[0], email)],
                 [
                     (ArabicText.CHECK_ACCOUNT, f"accounts:check:{email}"),
+                    (ArabicText.RELOGIN_BUTTON, f"accounts:relogin_confirm:{email}"),
                     (f"🗑️ حذف", f"accounts:delete:{email}"),
                 ],
             ]
