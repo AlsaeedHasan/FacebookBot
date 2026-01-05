@@ -1,4 +1,5 @@
 import os
+import shutil
 import uuid
 from io import BytesIO
 from typing import Literal
@@ -215,7 +216,7 @@ async def login_with_credentials(
     # Use headless=False for visible browser
     # Use load_images=True for manual login visibility
     facebook = FacebookUtils(
-        proxy=account_proxy,
+        # proxy=account_proxy,
         account_id=email,
         optimize_bandwidth=False,  # Disable bandwidth optimization for manual login
         load_images=True,  # Enable images for human-assisted login
@@ -225,8 +226,8 @@ async def login_with_credentials(
         # Initialize browser in NON-HEADLESS (visible) mode
         facebook._init_client_safe(
             headless=False,  # VISIBLE browser
-            enable_mobile_emulation=False,
-            proxy=account_proxy,
+            # enable_mobile_emulation=True,
+            # proxy=account_proxy,
             account_id=email,
             optimize_bandwidth=False,
             load_images=True,  # Enable images for human-assisted login
@@ -458,6 +459,9 @@ async def handle_manual_login_cancel(client: Client, callback_query: CallbackQue
 
         # Remove from active sessions
         del active_manual_sessions[account_id]
+        shutil.rmtree(
+            facebook.client._get_profile_dir(facebook._account_id), ignore_errors=True
+        )
 
     await callback_query.edit_message_text(
         "تم إلغاء العملية.",

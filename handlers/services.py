@@ -1,4 +1,6 @@
 import asyncio
+import pprint
+from time import sleep
 from typing import Union
 
 from pyrogram import Client, filters
@@ -246,15 +248,15 @@ def is_valid_facebook_url(url: str, profile: bool = False) -> bool:
     import re
 
     patterns = [
-        r"^https?:\/\/(www\.)?(facebook|fb)\.com\/([a-zA-Z0-9\.]+\/?)?$",  # Profile/Page URL
-        r"^https?:\/\/(www\.)?(facebook|fb)\.com\/(.*?\/)?(profile\.php\?id=[0-9]+)$",  # Profile/Page URL with ID
-        r"^https?:\/\/(www\.)?(facebook|fb)\.com\/(.*?\/)?(posts\/|story\.php|share\/p\/|permalink\.php\?story_fbid=)",  # Post URL
-        r"^https?:\/\/(www\.)?(facebook|fb)\.com\/(.*?\/)?(photo|photos|media)",  # Photo URL
-        r"^https?:\/\/(www\.)?(facebook|fb)\.com\/(.*?\/)?(groups\/|group)",  # Group URL
-        r"^https?:\/\/(www\.)?(facebook|fb)\.com\/(.*?\/)?(events\/|event)",  # Event URL
-        r"^https?:\/\/(www\.)?(facebook|fb)\.com\/(.*?\/)?(watch\/|videos\/)",  # Video URL
-        r"^https?:\/\/(www\.)?(facebook|fb)\.com\/(.*?\/)?(marketplace\/|item)",  # Marketplace URL
-        r"^https?:\/\/(www\.)?(facebook|fb)\.com\/(.*?\/)?(share\/)",  # Marketplace URL
+        r"^https?:\/\/(www\.|m\.)?(facebook|fb)\.com\/([a-zA-Z0-9\.]+\/?)?(\?.*?)?(#.*)?$",  # Profile/Page URL
+        r"^https?:\/\/(www\.|m\.)?(facebook|fb)\.com\/(.*?\/)?(profile\.php\?id=[0-9]+)(#.*)?$",  # Profile/Page URL with ID
+        r"^https?:\/\/(www\.|m\.)?(facebook|fb)\.com\/(.*?\/)?(posts\/|story\.php|share\/p\/|permalink\.php\?story_fbid=)",  # Post URL
+        r"^https?:\/\/(www\.|m\.)?(facebook|fb)\.com\/(.*?\/)?(photo|photos|media)",  # Photo URL
+        r"^https?:\/\/(www\.|m\.)?(facebook|fb)\.com\/(.*?\/)?(groups\/|group)",  # Group URL
+        r"^https?:\/\/(www\.|m\.)?(facebook|fb)\.com\/(.*?\/)?(events\/|event)",  # Event URL
+        r"^https?:\/\/(www\.|m\.)?(facebook|fb)\.com\/(.*?\/)?(watch\/|videos\/)",  # Video URL
+        r"^https?:\/\/(www\.|m\.)?(facebook|fb)\.com\/(.*?\/)?(marketplace\/|item)",  # Marketplace URL
+        r"^https?:\/\/(www\.|m\.)?(facebook|fb)\.com\/(.*?\/)?(share\/)",  # Marketplace URL
     ]
 
     if profile:

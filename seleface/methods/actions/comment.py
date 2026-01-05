@@ -24,25 +24,44 @@ class Comment:
             "error_type": None,
         }
         client.get(post_url)
-        # client.wait.until(
-        #     lambda client: client.execute_script("return document.readyState")
-        #     == "complete"
-        # )
-        sleep(10)
+        client.wait.until(
+            lambda client: client.execute_script("return document.readyState")
+            == "complete"
+        )
+        # sleep(10)
         # input("[+] Press Enter to continue...")
-        # open_comment_btn = client.wait.until(
-        #     EC.element_to_be_clickable(
-        #         (By.XPATH, '//div[@role="button" and contains(@aria-label, "comment")]')
-        #     )
-        # )
-        open_comment_btn = client.find_element(
+        # 2. ننتظر ظهور أي زرار فيه كلمة comment (سواء اللي عايزينه أو لا)
+        client.wait.until(
+            EC.presence_of_all_elements_located(
+                (By.XPATH, '//div[@role="button" and contains(@aria-label, "comment")]')
+            )
+        )
+
+        # 3. نجيب كل الزراير المحتملة
+        candidates = client.find_elements(
             By.XPATH, '//div[@role="button" and contains(@aria-label, "comment")]'
         )
-        client.execute_script(
-            "arguments[0].click();",
-            open_comment_btn,
-        )
-        sleep(0.5)
+
+        target_btn = None
+
+        for btn in candidates:
+            label = btn.get_attribute("aria-label")
+            if label and len(label) < 25:
+                target_btn = btn
+                break
+
+        if not target_btn and candidates:
+            target_btn = candidates[0]
+
+        if target_btn:
+            client.execute_script("arguments[0].click();", target_btn)
+        else:
+            data["status"] = "error"
+            data["message"] = "Comment button not found"
+            return data
+
+        sleep(1)
+
         commenting_area = client.find_element(By.XPATH, "//textarea[@role='combobox']")
         commenting_area.send_keys(cmnt)
         sleep(0.5)
@@ -56,5 +75,5 @@ class Comment:
             """,
         )
         client.execute_script("arguments[0].click();", comment_btn)
-        sleep(3)
+        sleep(7)
         return data
