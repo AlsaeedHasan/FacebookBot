@@ -59,7 +59,8 @@ class Client(uc.Chrome, Methods):
 
         self._account_id = account_id
         self._proxy_extension_path = None  # Track generated extension for cleanup
-
+        self.enable_mobile_emulation = enable_mobile_emulation
+        
         # إعداد خيارات Chrome (Undetected)
         options = uc.ChromeOptions()
 
